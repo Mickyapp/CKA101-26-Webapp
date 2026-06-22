@@ -59,6 +59,32 @@ public class PsychologistNoticeService {
 	}
 	
 	
+
+	// 改成（回傳 List）
+	public List<PsychologistNoticeVO> getTwoPsychologistNotice(Integer psych_id, Integer admin_id) {
+	    return dao.findByPA(psych_id, admin_id);
+	}
+
+	// 新增
+	public List<PsychologistNoticeVO> getByPsychId(Integer psych_id) {
+	    return dao.findByPsychId(psych_id);
+	}
+
+	public List<PsychologistNoticeVO> getByAdminId(Integer admin_id) {
+	    return dao.findByAdminId(admin_id);
+	}
+
+	
+	
+	public List<Integer> getDistinctPsychIds() {
+	    PsychologistNoticeDAO_interface dao = new PsychologistNoticeJDBCDAO();
+	    return dao.getDistinctPsychIds();
+	}
+
+	public List<Integer> getDistinctAdminIds() {
+	    PsychologistNoticeDAO_interface dao = new PsychologistNoticeJDBCDAO();
+	    return dao.getDistinctAdminIds();
+	}
 	
 	
 }

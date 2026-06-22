@@ -1,6 +1,7 @@
 package com.psychologistNotice.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,35 +37,41 @@ public class PsychologistNoticeServlet extends HttpServlet {
 			req.setAttribute("errorMsgs", errorMsgs);
 
 				/***************************1.接收請求參數 - 輸入格式的錯誤處理**********************/
-				String str = req.getParameter("psych_notice_id");
-				if (str == null || (str.trim()).length() == 0) {
-					errorMsgs.add("請輸入心理師通知編號");
-				}
-				// Send the use back to the form, if there were errors
-				if (!errorMsgs.isEmpty()) {
-					RequestDispatcher failureView = req
-							.getRequestDispatcher("/psychologistNotice/select_psychologistNotice_page.jsp");
-					failureView.forward(req, res);
-					return;//程式中斷
-				}
+				String str = req.getParameter("psych_notice_id");		
 				
-				Integer psych_notice_id = null;
-				try {
-					psych_notice_id = Integer.valueOf(str);
-				} catch (Exception e) {
-					errorMsgs.add("心理師通知編號格式不正確");
-				}
-				// Send the use back to the form, if there were errors
-				if (!errorMsgs.isEmpty()) {
-					RequestDispatcher failureView = req
-							.getRequestDispatcher("/psychologistNotice/select_psychologistNotice_page.jsp");
-					failureView.forward(req, res);
-					return;//程式中斷
-				}
+
+					if (str == null || (str.trim()).length() == 0) {
+						errorMsgs.add("請輸入心理師通知編號");
+					}
+					// Send the use back to the form, if there were errors
+					if (!errorMsgs.isEmpty()) {
+						RequestDispatcher failureView = req
+								.getRequestDispatcher("/psychologistNotice/select_psychologistNotice_page.jsp");
+						failureView.forward(req, res);
+						return;//程式中斷
+					}
+					
+					Integer psych_notice_id = null;
+					try {
+						psych_notice_id = Integer.valueOf(str);
+					} catch (Exception e) {
+						errorMsgs.add("心理師通知編號格式不正確");
+					}
+					// Send the use back to the form, if there were errors
+					if (!errorMsgs.isEmpty()) {
+						RequestDispatcher failureView = req
+								.getRequestDispatcher("/psychologistNotice/select_psychologistNotice_page.jsp");
+						failureView.forward(req, res);
+						return;//程式中斷
+					}
+		
 				
 				/***************************2.開始查詢資料*****************************************/
 				PsychologistNoticeService psychologistNoticeSvce = new PsychologistNoticeService();
 				PsychologistNoticeVO psychologistNoticeVO = psychologistNoticeSvce.getOnePsychologistNotice(psych_notice_id);
+				List<PsychologistNoticeVO> resultList = new ArrayList<PsychologistNoticeVO>();
+				resultList.add(psychologistNoticeVO);
+				
 				if (psychologistNoticeVO == null) {
 					errorMsgs.add("查無資料");
 				}
@@ -76,20 +83,133 @@ public class PsychologistNoticeServlet extends HttpServlet {
 					return;//程式中斷
 				}
 				
+				
 				/***************************3.查詢完成,準備轉交(Send the Success view)*************/
-				req.setAttribute("psychologistNoticeVO", psychologistNoticeVO); // 資料庫取出的empVO物件,存入req
+				req.setAttribute("psychologistNoticeList", resultList); ; // 資料庫取出的empVO物件,存入req
 				String url = "/psychologistNotice/listOnePsychologistNotice.jsp";
 				RequestDispatcher successView = req.getRequestDispatcher(url); // 成功轉交 listOneEmp.jsp
 				successView.forward(req, res);
 		}
 		
 		
-		if ("getOne_For_Update".equals(action)) { // 來自listAllEmp.jsp的請求
-
-//			List<String> errorMsgs = new LinkedList<String>();
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+//		//TWO
+		if ("getTwo_For_Display".equals(action)) { // 來自select_page.jsp的請求
+			
+			List<String> errorMsgs = new LinkedList<String>();
 			// Store this set in the request scope, in case we need to
 			// send the ErrorPage view.
-//			req.setAttribute("errorMsgs", errorMsgs);
+			req.setAttribute("errorMsgs", errorMsgs);
+
+				/***************************1.接收請求參數 - 輸入格式的錯誤處理**********************/
+				
+				String p = req.getParameter("psych_id");
+				String a = req.getParameter("admin_id");
+				
+				boolean hasP = p != null && p.trim().length() > 0;
+				boolean hasA = a != null && a.trim().length() > 0;
+				
+				if((p.trim()).length() == 0 && (a.trim()).length() == 0) {
+					//TWO 
+					
+					errorMsgs.add("請輸入心理師編號或員工編號");
+					
+					// Send the use back to the form, if there were errors
+					if (!errorMsgs.isEmpty()) {
+						RequestDispatcher failureView = req
+								.getRequestDispatcher("/psychologistNotice/select_psychologistNotice_page.jsp");
+						failureView.forward(req, res);
+						return;//程式中斷
+					}
+				}
+					
+				
+					
+		/***************************2.開始查詢資料*****************************************/
+		PsychologistNoticeService psychologistNoticeSvce = new PsychologistNoticeService();
+		List<PsychologistNoticeVO> resultList = null;
+		
+		if(hasP && hasA) {
+			resultList = psychologistNoticeSvce.getTwoPsychologistNotice(Integer.valueOf(p.trim()), Integer.valueOf(a.trim()));
+		}else if(hasP) {
+			resultList = psychologistNoticeSvce.getByPsychId(Integer.valueOf(p.trim()));
+		}else  {
+			resultList = psychologistNoticeSvce.getByAdminId(Integer.valueOf(a.trim()));
+		}
+		
+		
+		if (resultList == null || resultList.isEmpty()) {
+			errorMsgs.add("查無資料");
+		}
+		// Send the use back to the form, if there were errors
+		if (!errorMsgs.isEmpty()) {
+			RequestDispatcher failureView = req
+					.getRequestDispatcher("/psychologistNotice/select_psychologistNotice_page.jsp");
+			failureView.forward(req, res);
+			return;//程式中斷
+		}
+				
+				
+				
+				
+				
+				
+				
+				/***************************3.查詢完成,準備轉交(Send the Success view)*************/
+				req.setAttribute("psychologistNoticeList", resultList); // 資料庫取出的empVO物件,存入req
+				String url = "/psychologistNotice/listOnePsychologistNotice.jsp";
+				RequestDispatcher successView = req.getRequestDispatcher(url); // 成功轉交 listOneEmp.jsp
+				successView.forward(req, res);
+		}
+		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+//		
+		
+		
+		
+		
+		
+		if ("getOne_For_Update".equals(action)) { // 來自listAllEmp.jsp的請求
+
+			List<String> errorMsgs = new LinkedList<String>();
+			// Store this set in the request scope, in case we need to
+			// send the ErrorPage view.
+			req.setAttribute("errorMsgs", errorMsgs);
 			
 				/***************************1.接收請求參數****************************************/
 				Integer psych_notice_id = Integer.valueOf(req.getParameter("psych_notice_id"));
@@ -99,11 +219,17 @@ public class PsychologistNoticeServlet extends HttpServlet {
 				PsychologistNoticeVO psychologistNoticeVO = psychologistNoticeSvc.getOnePsychologistNotice(psych_notice_id);
 								
 				/***************************3.查詢完成,準備轉交(Send the Success view)************/
-				req.setAttribute("psychologistNoticeVO", psychologistNoticeVO);         // 資料庫取出的empVO物件,存入req
+				req.setAttribute("psychologistNoticeList", psychologistNoticeVO);         // 資料庫取出的empVO物件,存入req
 				String url = "/psychologistNotice/update_psychologistNotice_input.jsp";
+				
+				
 				RequestDispatcher successView = req.getRequestDispatcher(url);// 成功轉交 update_emp_input.jsp
 				successView.forward(req, res);
 		}
+		
+		
+		
+		
 		
 		
 		if ("update".equals(action)) { // 來自update_emp_input.jsp的請求
@@ -182,7 +308,7 @@ psychologistNoticeVO.setIs_read(isReadBool);
 
 				// Send the use back to the form, if there were errors
 				if (!errorMsgs.isEmpty()) {
-req.setAttribute("psychologistNoticeVO", psychologistNoticeVO); // 含有輸入格式錯誤的empVO物件,也存入req
+req.setAttribute("psychologistNoticeList", psychologistNoticeVO); // 含有輸入格式錯誤的empVO物件,也存入req
 					RequestDispatcher failureView = req
 							.getRequestDispatcher("/psychologistNotice/update_psychologistNotice_input.jsp");
 					failureView.forward(req, res);
@@ -194,8 +320,12 @@ req.setAttribute("psychologistNoticeVO", psychologistNoticeVO); // 含有輸入�
 				PsychologistNoticeService psychologistNoticeSvc = new PsychologistNoticeService();
 				psychologistNoticeVO = psychologistNoticeSvc.updatePsychologistNotice(psych_notice_id, psych_id, admin_id, notice_content, notice_type, created_at, isReadBool);
 //				empVO = empSvc.updateEmp(empno, ename, job, hiredate, sal, comm, deptno)
+				
+				List<PsychologistNoticeVO> resultList = new ArrayList<PsychologistNoticeVO>();
+				resultList.add(psychologistNoticeVO);
+				
 				/***************************3.修改完成,準備轉交(Send the Success view)*************/
-				req.setAttribute("psychologistNoticeVO", psychologistNoticeVO); // 資料庫update成功後,正確的的empVO物件,存入req
+				req.setAttribute("psychologistNoticeList", resultList);; // 資料庫update成功後,正確的的empVO物件,存入req
 				String url = "/psychologistNotice/listOnePsychologistNotice.jsp";
 				RequestDispatcher successView = req.getRequestDispatcher(url); // 修改成功後,轉交listOneEmp.jsp
 				successView.forward(req, res);
@@ -275,7 +405,9 @@ String is_read = req.getParameter("is_read");
 				
 								// Send the use back to the form, if there were errors
 								if (!errorMsgs.isEmpty()) {
-				req.setAttribute("psychologistNoticeVO", psychologistNoticeVO); // 含有輸入格式錯誤的empVO物件,也存入req
+				req.setAttribute("psychologistNoticeList", psychologistNoticeVO); // 含有輸入格式錯誤的empVO物件,也存入req
+				 PsychologistNoticeService psychologistNoticeSvc = new PsychologistNoticeService();
+				    req.setAttribute("psychologistNoticeSvc", psychologistNoticeSvc);
 									RequestDispatcher failureView = req
 											.getRequestDispatcher("/psychologistNotice/addPsychologistNotice.jsp");
 									failureView.forward(req, res);
@@ -297,7 +429,7 @@ String is_read = req.getParameter("is_read");
 			List<String> errorMsgs = new LinkedList<String>();
 			// Store this set in the request scope, in case we need to
 			// send the ErrorPage view.
-			req.setAttribute("errorMsgs", errorMsgs);
+			req.setAttribute("psychologistNoticeList", errorMsgs);
 	
 				/***************************1.接收請求參數***************************************/
 				Integer psych_notice_id = Integer.valueOf(req.getParameter("psych_notice_id"));
@@ -307,8 +439,22 @@ String is_read = req.getParameter("is_read");
 				psychologistNoticeSvc.deletePsychologistNotice(psych_notice_id);
 				
 				/***************************3.刪除完成,準備轉交(Send the Success view)***********/								
-				String url = "/psychologistNotice/psychologistNotice.do";
+//				String url = "/psychologistNotice/psychologistNotice.do";
 				res.sendRedirect(req.getContextPath() + "/psychologistNotice/listAllPsychologistNotice.jsp");
+		}
+		
+		
+		
+		if ("add_For_Display".equals(action)) {//新增
+		    
+		    // 把不重複的編號清單傳給 JSP
+		    PsychologistNoticeService psychologistNoticeSvc = new PsychologistNoticeService();
+		    req.setAttribute("psychologistNoticeSvc", psychologistNoticeSvc);
+		    
+		    // 轉到 ADD 頁面
+		    RequestDispatcher successView = req.getRequestDispatcher(
+		        "/psychologistNotice/addPsychologistNotice.jsp");
+		    successView.forward(req, res);
 		}
 	}
 }

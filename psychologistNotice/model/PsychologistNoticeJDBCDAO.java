@@ -5,7 +5,7 @@ import java.sql.*;
 
 public class PsychologistNoticeJDBCDAO implements PsychologistNoticeDAO_interface{
 	String driver = "com.mysql.cj.jdbc.Driver";
-	String url = "jdbc:mysql://localhost:3306/test_db2?serverTimezone=Asia/Taipei";
+	String url = "jdbc:mysql://localhost:3306/dbtest11?serverTimezone=Asia/Taipei";
 	String userid = "root";
 	String passwd = "123456";
 	
@@ -18,12 +18,37 @@ public class PsychologistNoticeJDBCDAO implements PsychologistNoticeDAO_interfac
 	private static final String GET_ONE_STMT =
 			"SELECT psych_notice_id,psych_id,admin_id,notice_content,notice_type,created_at,is_read "
 			+ "FROM psychologist_notice where psych_notice_id=?";//哪個種類
+	private static final String GET_TWO_STMT =
+			"SELECT psych_notice_id,psych_id,admin_id,notice_content,notice_type,created_at,is_read "
+			+ "FROM psychologist_notice where psych_id=? && admin_id=?";
+	
+	
+	
 	private static final String DELETE =
 			"DELETE FROM psychologist_notice where psych_notice_id = ?";
 	private static final String UPDATE =
 			"UPDATE psychologist_notice "
 			+ " set psych_id=?,admin_id=?,notice_content=?,notice_type=?,created_at=?,is_read=?"
 			+ " where psych_notice_id=?";
+	
+	
+	
+	
+	private static final String GET_BY_PSYCH_ID =
+		    "SELECT psych_notice_id,psych_id,admin_id,notice_content,notice_type,created_at,is_read "
+		    + "FROM psychologist_notice WHERE psych_id = ?";
+
+	private static final String GET_BY_ADMIN_ID =
+	    "SELECT psych_notice_id,psych_id,admin_id,notice_content,notice_type,created_at,is_read "
+	    + "FROM psychologist_notice WHERE admin_id = ?";
+
+	
+	//需要改成從員工與心理師表個拿人
+	private static final String GET_DISTINCT_PSYCH_IDS =
+	    "SELECT DISTINCT psych_id FROM psychologist ORDER BY psych_id ASC";
+
+	private static final String GET_DISTINCT_ADMIN_IDS =
+	    "SELECT DISTINCT admin_id FROM admin ORDER BY admin_id ASC";
 	
 //=======================================================================================================================================
 	
@@ -217,6 +242,236 @@ public class PsychologistNoticeJDBCDAO implements PsychologistNoticeDAO_interfac
 		}
 		return psychologistNoticeVO;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	@Override
+	public List<PsychologistNoticeVO> findByPA(Integer psych_id, Integer admin_id) {
+	    List<PsychologistNoticeVO> list = new ArrayList<PsychologistNoticeVO>(); // ✅ 改成 List
+	    Connection con = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+
+	    try {
+	        Class.forName(driver);
+	        con = DriverManager.getConnection(url, userid, passwd);
+	        pstmt = con.prepareStatement(GET_TWO_STMT);
+	        pstmt.setInt(1, psych_id);
+	        pstmt.setInt(2, admin_id);
+	        rs = pstmt.executeQuery();
+
+	        while (rs.next()) {
+	            PsychologistNoticeVO vo = new PsychologistNoticeVO(); // ✅ 每筆都是新的
+	            vo.setPsych_notice_id(rs.getInt("psych_notice_id"));
+	            vo.setPsych_id(rs.getInt("psych_id"));
+	            vo.setAdmin_id(rs.getInt("admin_id"));
+	            vo.setNotice_content(rs.getString("notice_content"));
+	            vo.setNotice_type(rs.getInt("notice_type"));
+	            vo.setCreated_at(rs.getTimestamp("created_at"));
+	            vo.setIs_read(rs.getBoolean("is_read"));
+	            list.add(vo); // ✅ 加入 list
+	        }
+	    } catch (ClassNotFoundException e) {
+	        throw new RuntimeException("Couldn't load database driver. " + e.getMessage());
+	    } catch (SQLException se) {
+	        throw new RuntimeException("A database error occured. " + se.getMessage());
+	    } finally {
+	        if (rs != null) { try { rs.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (pstmt != null) { try { pstmt.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (con != null) { try { con.close(); } catch (Exception e) { e.printStackTrace(System.err); } }
+	    }
+	    return list;
+	}
+	
+	
+	
+	@Override
+	public List<PsychologistNoticeVO> findByPsychId(Integer psych_id) {
+	    List<PsychologistNoticeVO> list = new ArrayList<PsychologistNoticeVO>();
+	    Connection con = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+
+	    try {
+	        Class.forName(driver);
+	        con = DriverManager.getConnection(url, userid, passwd);
+	        pstmt = con.prepareStatement(GET_BY_PSYCH_ID);
+	        pstmt.setInt(1, psych_id);
+	        rs = pstmt.executeQuery();
+
+	        while (rs.next()) {
+	            PsychologistNoticeVO vo = new PsychologistNoticeVO();
+	            vo.setPsych_notice_id(rs.getInt("psych_notice_id"));
+	            vo.setPsych_id(rs.getInt("psych_id"));
+	            vo.setAdmin_id(rs.getInt("admin_id"));
+	            vo.setNotice_content(rs.getString("notice_content"));
+	            vo.setNotice_type(rs.getInt("notice_type"));
+	            vo.setCreated_at(rs.getTimestamp("created_at"));
+	            vo.setIs_read(rs.getBoolean("is_read"));
+	            list.add(vo);
+	        }
+	    } catch (ClassNotFoundException e) {
+	        throw new RuntimeException("Couldn't load database driver. " + e.getMessage());
+	    } catch (SQLException se) {
+	        throw new RuntimeException("A database error occured. " + se.getMessage());
+	    } finally {
+	        if (rs != null) { try { rs.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (pstmt != null) { try { pstmt.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (con != null) { try { con.close(); } catch (Exception e) { e.printStackTrace(System.err); } }
+	    }
+	    return list;
+	}
+	
+	
+	
+	@Override
+	public List<PsychologistNoticeVO> findByAdminId(Integer admin_id) {
+	    List<PsychologistNoticeVO> list = new ArrayList<PsychologistNoticeVO>();
+	    Connection con = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+
+	    try {
+	        Class.forName(driver);
+	        con = DriverManager.getConnection(url, userid, passwd);
+	        pstmt = con.prepareStatement(GET_BY_ADMIN_ID);
+	        pstmt.setInt(1, admin_id);
+	        rs = pstmt.executeQuery();
+
+	        while (rs.next()) {
+	            PsychologistNoticeVO vo = new PsychologistNoticeVO();
+	            vo.setPsych_notice_id(rs.getInt("psych_notice_id"));
+	            vo.setPsych_id(rs.getInt("psych_id"));
+	            vo.setAdmin_id(rs.getInt("admin_id"));
+	            vo.setNotice_content(rs.getString("notice_content"));
+	            vo.setNotice_type(rs.getInt("notice_type"));
+	            vo.setCreated_at(rs.getTimestamp("created_at"));
+	            vo.setIs_read(rs.getBoolean("is_read"));
+	            list.add(vo);
+	        }
+	    } catch (ClassNotFoundException e) {
+	        throw new RuntimeException("Couldn't load database driver. " + e.getMessage());
+	    } catch (SQLException se) {
+	        throw new RuntimeException("A database error occured. " + se.getMessage());
+	    } finally {
+	        if (rs != null) { try { rs.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (pstmt != null) { try { pstmt.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (con != null) { try { con.close(); } catch (Exception e) { e.printStackTrace(System.err); } }
+	    }
+	    return list;
+	}
+	
+	
+	
+	
+	
+	@Override
+	public List<Integer> getDistinctPsychIds() {
+	    List<Integer> list = new ArrayList<Integer>();
+	    Connection con = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	        Class.forName(driver);
+	        con = DriverManager.getConnection(url, userid, passwd);
+	        pstmt = con.prepareStatement(GET_DISTINCT_PSYCH_IDS);
+	        rs = pstmt.executeQuery();
+	        while (rs.next()) { list.add(rs.getInt("psych_id")); }
+	    } catch (ClassNotFoundException e) {
+	        throw new RuntimeException("Couldn't load database driver. " + e.getMessage());
+	    } catch (SQLException se) {
+	        throw new RuntimeException("A database error occured. " + se.getMessage());
+	    } finally {
+	        if (rs != null) { try { rs.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (pstmt != null) { try { pstmt.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (con != null) { try { con.close(); } catch (Exception e) { e.printStackTrace(System.err); } }
+	    }
+	    return list;
+	}
+
+	@Override
+	public List<Integer> getDistinctAdminIds() {
+	    List<Integer> list = new ArrayList<Integer>();
+	    Connection con = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	        Class.forName(driver);
+	        con = DriverManager.getConnection(url, userid, passwd);
+	        pstmt = con.prepareStatement(GET_DISTINCT_ADMIN_IDS);
+	        rs = pstmt.executeQuery();
+	        while (rs.next()) { list.add(rs.getInt("admin_id")); }
+	    } catch (ClassNotFoundException e) {
+	        throw new RuntimeException("Couldn't load database driver. " + e.getMessage());
+	    } catch (SQLException se) {
+	        throw new RuntimeException("A database error occured. " + se.getMessage());
+	    } finally {
+	        if (rs != null) { try { rs.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (pstmt != null) { try { pstmt.close(); } catch (SQLException se) { se.printStackTrace(System.err); } }
+	        if (con != null) { try { con.close(); } catch (Exception e) { e.printStackTrace(System.err); } }
+	    }
+	    return list;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	@Override
 	public List<PsychologistNoticeVO> getAll(){
 		List<PsychologistNoticeVO> list = new ArrayList<PsychologistNoticeVO>();
@@ -304,7 +559,7 @@ public class PsychologistNoticeJDBCDAO implements PsychologistNoticeDAO_interfac
 	
 	
 	
-	
+
 	
 	
 	
